@@ -12,6 +12,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
     steps:
       - uses: actions/checkout@v3
 
@@ -25,7 +27,7 @@ jobs:
 
   deploy-dev:
     name: Deploy to dev
-    needs: [ build ]
+    needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -36,10 +38,11 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: .nais/nais.yaml,.nais/k8s-access.yaml
           PRINT_PAYLOAD: true
+          VAR: image=${{ needs.build.outputs.image }}
 
   deploy-prod:
     name: Deploy to prod
-    needs: [ build ]
+    needs: build 
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -50,3 +53,4 @@ jobs:
           CLUSTER: prod-gcp
           RESOURCE: .nais/nais.yaml,.nais/k8s-access.yaml
           PRINT_PAYLOAD: true
+          VAR: image=${{ needs.build.outputs.image }}
